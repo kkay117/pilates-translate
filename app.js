@@ -102,7 +102,10 @@ function setupRecognition() {
   }
   const r = new SpeechRecognitionImpl();
   r.lang = currentRecognitionLang();
-  r.continuous = true;
+  // 안드로이드는 continuous 모드가 불안정해서 같은 구간을 반복 인식하는 버그가
+  // 있습니다. 한 번에 한 발화만 인식하게 하고, onend에서 직접 재시작해
+  // "연속 듣기"를 만듭니다 (브라우저의 continuous 내부 로직을 쓰지 않음).
+  r.continuous = false;
   r.interimResults = true;
 
   r.onresult = (event) => {
@@ -127,8 +130,17 @@ function setupRecognition() {
 
   r.onend = () => {
     if (listening) {
-      // 브라우저가 자동 종료시키는 경우가 있어 계속 듣기 위해 재시작
-      r.start();
+      // continuous=false라 발화가 끝날 때마다 세션이 종료되므로, 계속 듣기
+      // 위해 재시작. 즉시 재시작하면 일부 기기에서 오류가 나서 짧게 지연.
+      setTimeout(() => {
+        if (listening) {
+          try {
+            r.start();
+          } catch (e) {
+            // 이미 시작된 상태 등 무해한 오류는 무시
+          }
+        }
+      }, 200);
     }
   };
 
