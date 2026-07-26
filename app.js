@@ -71,7 +71,7 @@ let listening = false;
 // 안드로이드는 문장 중간의 짧은 호흡 멈춤에도 isFinal 결과를 끊어서 보내는 경우가
 // 많아, 바로 번역하면 한 문장이 여러 조각으로 쪼개져 중복 번역됩니다. 그래서
 // 최종 결과를 버퍼에 모아두고, SILENCE_MS 동안 새 결과가 없을 때만 번역합니다.
-const SILENCE_MS = 1200;
+const SILENCE_MS = 2500;
 let finalBuffer = "";
 let silenceTimer = null;
 
