@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover" />
+<title>필라번역 · 실시간 필라테스 통역기</title>
+<link rel="stylesheet" href="style.css" />
+<link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon.svg" type="image/svg+xml" />
+<link rel="apple-touch-icon" href="icon.svg" />
+<meta name="theme-color" content="#101418" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="필라번역" />
+</head>
+<body>
+
+<header class="topbar">
+  <h1>🧘 필라번역</h1>
+  <button id="settingsBtn" class="icon-btn" title="설정">⚙️ 설정</button>
+</header>
+
+<main>
+  <div class="lang-row">
+    <span class="lang-label">외국어:</span>
+    <select id="targetLang">
+      <option value="en">영어 (English)</option>
+      <option value="ja">일본어 (日本語)</option>
+      <option value="zh-CN">중국어 간체 (简体中文)</option>
+      <option value="vi">베트남어 (Tiếng Việt)</option>
+      <option value="es">스페인어 (Español)</option>
+      <option value="ru">러시아어 (Русский)</option>
+      <option value="th">태국어 (ภาษาไทย)</option>
+      <option value="fr">프랑스어 (Français)</option>
+      <option value="de">독일어 (Deutsch)</option>
+    </select>
+    <button id="swapBtn" class="icon-btn" title="번역 방향 전환">⇄ <span id="directionText">한국어→영어</span></button>
+  </div>
+  <div class="lang-row">
+    <label class="tts-toggle">
+      <input type="checkbox" id="ttsToggle" checked />
+      🔊 음성 출력
+    </label>
+  </div>
+
+  <section class="caption-area">
+    <div class="caption-block source">
+      <div class="caption-label" id="sourceLabel">한국어 (인식됨)</div>
+      <div id="sourceText" class="caption-text">마이크 버튼을 눌러 시작하세요</div>
+    </div>
+    <div class="caption-block translated">
+      <div class="caption-label" id="targetLabel">번역</div>
+      <div id="translatedText" class="caption-text big"></div>
+    </div>
+  </section>
+
+  <div class="mic-row">
+    <button id="micBtn" class="mic-btn">🎤</button>
+    <span id="status" class="status">대기 중</span>
+  </div>
+
+  <div class="text-input-row">
+    <input id="manualText" type="text" placeholder="또는 직접 입력해서 번역 (음성인식 안 될 때)" />
+    <button id="manualSendBtn">번역</button>
+  </div>
+
+  <section class="history">
+    <div class="history-header">
+      <span>지난 번역</span>
+      <button id="clearHistory" class="link-btn">지우기</button>
+    </div>
+    <ul id="historyList"></ul>
+  </section>
+</main>
+
+<div id="settingsModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>설정</h2>
+
+    <p class="hint-text">번역 엔진: <strong>MyMemory</strong> (무료, API 키 불필요). 하루 사용량 제한(약 5,000단어)이 있으며, 아래에 이메일을 입력하면 한도가 늘어납니다 (선택 사항).</p>
+    <label class="field-label">이메일 (선택, 무료 사용량 한도 증가)</label>
+    <input id="emailInput" type="text" placeholder="예: name@example.com" />
+
+    <label class="field-label">전문용어 힌트 사용</label>
+    <label class="switch-row">
+      <input type="checkbox" id="glossaryToggle" checked />
+      필라테스/PT 용어 번역 정확도 향상 (권장)
+    </label>
+
+    <hr />
+
+    <label class="field-label">용어 추가 (선택)</label>
+    <div class="term-add-row">
+      <input id="newTermKo" type="text" placeholder="한국어 용어 (예: 코어)" />
+      <input id="newTermEn" type="text" placeholder="영어 힌트 (예: core)" />
+      <button id="addTermBtn">추가</button>
+    </div>
+
+    <div class="modal-actions">
+      <button id="saveSettingsBtn" class="primary-btn">저장</button>
+      <button id="closeSettingsBtn" class="secondary-btn">닫기</button>
+    </div>
+  </div>
+</div>
+
+<script src="glossary.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
