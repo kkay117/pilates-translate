@@ -71,7 +71,7 @@ let listening = false;
 // 안드로이드는 문장 중간의 짧은 호흡 멈춤에도 isFinal 결과를 끊어서 보내는 경우가
 // 많아, 바로 번역하면 한 문장이 여러 조각으로 쪼개져 중복 번역됩니다. 그래서
 // 최종 결과를 버퍼에 모아두고, SILENCE_MS 동안 새 결과가 없을 때만 번역합니다.
-const SILENCE_MS = 2500;
+const SILENCE_MS = 3800;
 let finalBuffer = "";
 let silenceTimer = null;
 
@@ -107,6 +107,9 @@ function setupRecognition() {
   // "연속 듣기"를 만듭니다 (브라우저의 continuous 내부 로직을 쓰지 않음).
   r.continuous = false;
   r.interimResults = true;
+  // 인식 후보를 여러 개 받아서, 필라테스 용어 사전과 더 잘 맞는 후보를 고릅니다
+  // (기본 1순위 후보가 전문용어를 잘못 알아듣는 경우가 있어 보정)
+  r.maxAlternatives = 5;
 
   // 세션(발화) 안에서 onresult가 여러 번 겹쳐 발생해도 안전하도록, resultIndex로
   // 이어붙이지 않고 매번 이번 세션의 전체 결과를 다시 계산해서 덮어씁니다.
@@ -114,15 +117,31 @@ function setupRecognition() {
   // 같은 단어가 계속 덧붙여지는 버그가 있었음)
   let sessionFinalText = "";
 
+  function pickBestAlternative(result) {
+    if (state.reversed) return result[0].transcript; // 용어 사전은 한국어 기준이라 반대 방향엔 미적용
+    let best = result[0].transcript;
+    let bestScore = countGlossaryMatches(best);
+    for (let a = 1; a < result.length; a++) {
+      const alt = result[a].transcript;
+      const score = countGlossaryMatches(alt);
+      if (score > bestScore) {
+        bestScore = score;
+        best = alt;
+      }
+    }
+    return best;
+  }
+
   r.onresult = (event) => {
     let allFinal = "";
     let interim = "";
     for (let i = 0; i < event.results.length; i++) {
       const res = event.results[i];
+      const transcript = pickBestAlternative(res);
       if (res.isFinal) {
-        allFinal += res[0].transcript;
+        allFinal += transcript;
       } else {
-        interim += res[0].transcript;
+        interim += transcript;
       }
     }
     sessionFinalText = allFinal;

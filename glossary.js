@@ -100,6 +100,17 @@ function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// 텍스트에 필라테스/PT 용어 사전 항목이 몇 개나 포함되는지 셉니다
+// (음성인식 후보 중 어떤 것이 더 그럴듯한지 고르는 데 사용)
+function countGlossaryMatches(text) {
+  const terms = getGlossary();
+  let count = 0;
+  for (const { term } of terms) {
+    if (text.includes(term)) count++;
+  }
+  return count;
+}
+
 // 긴 용어부터 먼저 치환해서 부분 중복 매칭을 방지합니다 (예: "측면 굴곡" vs "굴곡")
 function annotateWithGlossary(text) {
   const terms = getGlossary().slice().sort((a, b) => b.term.length - a.term.length);
