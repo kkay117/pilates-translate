@@ -108,20 +108,25 @@ function setupRecognition() {
   r.continuous = false;
   r.interimResults = true;
 
+  // 세션(발화) 안에서 onresult가 여러 번 겹쳐 발생해도 안전하도록, resultIndex로
+  // 이어붙이지 않고 매번 이번 세션의 전체 결과를 다시 계산해서 덮어씁니다.
+  // (안드로이드에서 resultIndex 기준 누적 방식은 같은 구간이 중복 발생할 때
+  // 같은 단어가 계속 덧붙여지는 버그가 있었음)
+  let sessionFinalText = "";
+
   r.onresult = (event) => {
+    let allFinal = "";
     let interim = "";
-    for (let i = event.resultIndex; i < event.results.length; i++) {
+    for (let i = 0; i < event.results.length; i++) {
       const res = event.results[i];
-      const transcript = res[0].transcript;
       if (res.isFinal) {
-        finalBuffer += transcript;
-        els.sourceText.textContent = finalBuffer;
-        scheduleTranslation();
+        allFinal += res[0].transcript;
       } else {
-        interim += transcript;
+        interim += res[0].transcript;
       }
     }
-    if (interim) els.sourceText.textContent = (finalBuffer + " " + interim).trim();
+    sessionFinalText = allFinal;
+    els.sourceText.textContent = (finalBuffer + " " + sessionFinalText + " " + interim).trim();
   };
 
   r.onerror = (e) => {
@@ -129,6 +134,13 @@ function setupRecognition() {
   };
 
   r.onend = () => {
+    if (sessionFinalText.trim()) {
+      finalBuffer = (finalBuffer + " " + sessionFinalText.trim()).trim();
+      els.sourceText.textContent = finalBuffer;
+      scheduleTranslation();
+    }
+    sessionFinalText = "";
+
     if (listening) {
       // continuous=false라 발화가 끝날 때마다 세션이 종료되므로, 계속 듣기
       // 위해 재시작. 즉시 재시작하면 일부 기기에서 오류가 나서 짧게 지연.
